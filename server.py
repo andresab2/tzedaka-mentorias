@@ -4,13 +4,14 @@ import json
 from supabase_client import save_contact, supabase
 import urllib.parse
 import yagmail
+import os
 
 def send_email(contact):
     try:
         # Configuración del correo
-        sender_email = "tzedakamentorias@gmail.com"  # Reemplaza con tu correo
-        sender_password = "jwsf mkwk mxbh iknj"  # Reemplaza con tu contraseña de aplicación
-        receiver_email = "andres@ab2capital.com"
+        sender_email = os.environ.get("SENDER_EMAIL", "tzedakamentorias@gmail.com")
+        sender_password = os.environ.get("SENDER_PASSWORD", "jwsf mkwk mxbh iknj")
+        receiver_email = os.environ.get("RECEIVER_EMAIL", "andres@ab2capital.com")
 
         # Crear el contenido del correo
         email_content = f"""
@@ -144,14 +145,18 @@ def get_local_ip():
         s.close()
     return ip
 
-def run(server_class=HTTPServer, handler_class=RequestHandler, port=8000):
-    server_address = ('', port)
-    httpd = server_class(server_address, handler_class)
-    local_ip = get_local_ip()
-    print(f"Servidor iniciado en:")
+def run_server():
+    port = int(os.environ.get("PORT", 8000))
+    server = HTTPServer(('0.0.0.0', port), RequestHandler)
+    print(f"\nServidor iniciado en:")
     print(f"http://localhost:{port}")
-    print(f"http://{local_ip}:{port}")
-    httpd.serve_forever()
+    print(f"http://{get_local_ip()}:{port}")
+    print("\nPresiona Ctrl+C para detener el servidor")
+    try:
+        server.serve_forever()
+    except KeyboardInterrupt:
+        print("\nDeteniendo el servidor...")
+        server.server_close()
 
 if __name__ == '__main__':
-    run() 
+    run_server() 
